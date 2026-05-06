@@ -1,0 +1,133 @@
+unit cUpdateTableMSSQL;
+
+interface
+
+uses
+  System.SysUtils,
+  FireDAC.Comp.Client,
+  cUpdateDataBase;
+
+type
+  TUpdateTableMSSQL = class(TUpdateDataBase)
+
+  private
+    function TableExists(aTableName: string): Boolean;
+
+    procedure Franchises;
+    procedure Actors;
+    procedure Characters;
+
+  public
+    constructor Create(aConnection: TFDConnection);
+
+    procedure Execute;
+  end;
+
+implementation
+
+{ TUpdateTableMSSQL }
+
+constructor TUpdateTableMSSQL.Create(aConnection: TFDConnection);
+begin
+  inherited Create(aConnection);
+end;
+
+procedure TUpdateTableMSSQL.Execute;
+begin
+  Franchises;
+  Actors;
+  Characters;
+end;
+
+function TUpdateTableMSSQL.TableExists(aTableName: string): Boolean;
+var
+  Qry: TFDQuery;
+begin
+  Result := False;
+
+  Qry := nil;
+
+  try
+    Qry := TFDQuery.Create(nil);
+
+    Qry.Connection := ConnectionDB;
+
+    Qry.SQL.Clear;
+    Qry.SQL.Add(
+      ' SELECT OBJECT_ID(:TableName, ''U'') AS ID '
+    );
+
+    Qry.ParamByName('TableName').AsString := aTableName;
+
+    Qry.Open;
+
+    Result := Qry.FieldByName('ID').AsInteger > 0;
+
+  finally
+    if Assigned(Qry) then
+      FreeAndNil(Qry);
+  end;
+end;
+
+procedure TUpdateTableMSSQL.Franchises;
+begin
+  if not TableExists('Franquias') then
+  begin
+    ExecuteDirectSQL(
+
+      ' CREATE TABLE Franquias ( ' +
+      '   franquiaId INT IDENTITY PRIMARY KEY, ' +
+      '   nome VARCHAR(100) UNIQUE ' +
+      ' ) '
+
+    );
+  end;
+end;
+
+procedure TUpdateTableMSSQL.Actors;
+begin
+  if not TableExists('Atores') then
+  begin
+    ExecuteDirectSQL(
+
+      ' CREATE TABLE Atores ( ' +
+      '   atorId INT IDENTITY PRIMARY KEY, ' +
+      '   nome VARCHAR(100) UNIQUE ' +
+      ' ) '
+
+    );
+  end;
+end;
+
+procedure TUpdateTableMSSQL.Characters;
+begin
+  if not TableExists('Personagens') then
+  begin
+    ExecuteDirectSQL(
+
+      ' CREATE TABLE Personagens ( ' +
+      '   personagemId INT IDENTITY PRIMARY KEY, ' +
+      '   nome VARCHAR(100), ' +
+      '   descricao VARCHAR(MAX), ' +
+      '   tipoMidia VARCHAR(20), ' +
+      '   franquiaId INT, ' +
+      '   atorId INT, ' +
+
+      '   CONSTRAINT UK_Personagem_Franquia ' +
+      '   UNIQUE (nome, franquiaId), ' +
+
+      '   CONSTRAINT FK_Personagens_Franquias ' +
+      '   FOREIGN KEY (franquiaId) ' +
+      '   REFERENCES Franquias(franquiaId), ' +
+
+      '   CONSTRAINT FK_Personagens_Atores ' +
+      '   FOREIGN KEY (atorId) ' +
+      '   REFERENCES Atores(atorId) ' +
+
+      ' ) '
+
+    );
+  end;
+end;
+
+end.

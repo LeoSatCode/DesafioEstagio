@@ -1,0 +1,32 @@
+# Arquivos de Compilação e Cache do Delphi
+*.dcu
+*.identcache
+*.local
+*.otares
+*.stat
+*.tvsconfig
+*.~*
+*.cfg
+*.dof
+*.dro
+*.dsk
+
+# Diretórios de Histórico e Recuperação Automática
+__history/
+__recovery/
+
+# Executáveis e Binários
+*.exe
+*.dll
+*.bpl
+*.bpi
+*.dcp
+*.so
+*.apk
+
+# Arquivos de Debug e Mapa de Memória
+*.drc
+*.map
+*.dres
+*.rsm
+*.tds
