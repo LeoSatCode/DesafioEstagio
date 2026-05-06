@@ -5,8 +5,9 @@ object dtmConnection: TdtmConnection
   object ConnectionDB: TFDConnection
     Params.Strings = (
       'Database=CineVerseDB'
-      'OSAuthent=Yes'
-      'Server=VM-TREINODOMTEC'
+      'Server=DC-TR-05-VM\SERVERCURSO'
+      'User_Name=sa'
+      'Password=domtec@10'
       'DriverID=MSSQL')
     LoginPrompt = False
     Left = 88

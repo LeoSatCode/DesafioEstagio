@@ -14,4 +14,13 @@ object frmPrincipal: TfrmPrincipal
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object btnImportar: TPngBitBtn
+    Left = 216
+    Top = 104
+    Width = 75
+    Height = 25
+    Caption = 'IMPORTAR'
+    TabOrder = 0
+    OnClick = btnImportarClick
+  end
 end

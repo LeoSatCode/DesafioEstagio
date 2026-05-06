@@ -1,0 +1,147 @@
+unit cCharacterManager;
+
+interface
+
+uses System.SysUtils, System.IOUtils, System.Generics.Collections,
+     FireDAC.Comp.Client, cCharacter, cCharacterService;
+
+Type
+  TCharacterManager = class  //A ponte reintroduce o arquivo, o processamento de dados e a persistencia no banco
+  private
+    FConnection: TFDConnection;
+    procedure SavetoDatabase(ACharacter: TCharacter);
+    function GetOrCreateFranchise(const AName: string): Integer;
+    function GetOrCreateActor(const AName: string): Integer;
+
+  public
+    constructor Create(AConnection: TFDConnection);
+    function ImportFromFile(const AFilePath: string): Integer; //Função que será chmada pelo Form
+  end;
+
+implementation
+
+{ TCharacterManager }
+
+constructor TCharacterManager.Create(AConnection: TFDConnection);
+begin
+  inherited Create;
+  FConnection := AConnection;
+end;
+
+function TCharacterManager.ImportFromFile(const AFilePath: string): Integer;
+var JsonContent:   string;
+    CharacterList: TObjectList<TCharacter>;
+    Character:     TCharacter;
+begin
+  Result := 0;
+
+  if not TFile.Exists(AFilePath) then  //Se o caminho do arquivo não existir
+    raise Exception.Create('Arquivo não encontrado: ' + AFilePath); //fazemos o tratamento de erro
+
+  JsonContent := TFile.ReadAllText(AFilePath, TEncoding.UTF8); //Leitura do Json
+
+  CharacterList := TCharacterService.LoadFromJsonString(JsonContent); //A lista recebe o conteúdo carregado do Json
+  try
+    if Assigned(CharacterList) then
+    begin
+      for Character in CharacterList do //Percorremos so personagens da lista
+      begin
+        SavetoDatabase(Character); // Chamamos a persistência para cada item da lista
+        Inc(Result); //Faz a contagem dos itens bem sucedidos
+      end;
+    end;
+  finally
+    FreeAndNil(CharacterList);
+  end;
+end;
+
+procedure TCharacterManager.SavetoDatabase(ACharacter: TCharacter);
+var Qry: TFDQuery;
+    VFranchiseId, VActorId: Integer;
+begin
+  VFranchiseId := GetOrCreateFranchise(ACharacter.Franchise); //Resolução de dependências (Chaves Estrangeiras)
+  VActorId     := GetOrCreateActor(ACharacter.ActorOrActress);
+
+  Qry := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+    Qry.SQL.Text   := 'IF NOT EXISTS (SELECT 1 FROM Personagens WHERE nome = :nome AND franquiaId = :franquiaId) '+//Já faz o tratamento de duplicidades
+                    'BEGIN '+                                                                                      //e insere personagens APENAS se não existirem
+                    ' INSERT INTO Personagens (nome, descricao, tipoMidia, franquiaId, atorId) '+                  //naquela franquia.
+                    ' VALUES (:nome, :descricao, :tipoMidia, :franquiaId, :atorId) '+
+                    'END';
+
+    Qry.ParamByName('nome').AsString        := ACharacter.Name;
+    Qry.ParamByName('descricao').AsString   := ACharacter.Description;
+    Qry.ParamByName('tipoMidia').AsString   := ACharacter.MediaType;
+
+    Qry.ParamByName('franquiaId').AsInteger := VFranchiseId;
+    Qry.ParamByName('atorId').AsInteger     := VActorId;
+
+    Qry.ExecSQL;
+  finally
+    FreeAndNil(Qry);
+  end;
+end;
+
+function TCharacterManager.GetOrCreateFranchise(const AName: string): Integer;
+var Qry: TFDQuery;
+begin
+  Result := 0;
+  if AName.Trim.IsEmpty then Exit;  //O Trim remove espaços no inicio e final da string, se o nome estiver vazio, é tchau, brigado (y)
+
+  Qry := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+
+    Qry.SQL.Text   := 'SELECT franquiaId FROM Franquias WHERE nome = :nome'; //Faz o Select pra achar a Franquia existente
+    Qry.ParamByName('nome').AsString := AName;
+    Qry.Open;
+
+    if not Qry.IsEmpty then
+      Result := Qry.FieldByName('franquiaId').AsInteger
+    else
+    begin
+      Qry.Close;      //Se não achou a Franquia, faz uma inserção da mesma já retornando o ID gerado pelo IDENTITY do SQL Server
+      Qry.SQL.Text := 'INSERT INTO Franquias (nome) VALUES (:nome); SELECT SCOPE_IDENTITY() AS NewID;';
+      Qry.ParamByName('nome').AsString := AName;
+      Qry.Open;
+      Result := Qry.FieldByName('NewID').AsInteger; //Campo criado no ato do INSERT
+    end;
+
+  finally
+    FreeAndNil(Qry);
+  end;
+end;
+
+function TCharacterManager.GetOrCreateActor(const AName: string): Integer;
+var Qry: TFDQuery;
+begin
+  Result := 0;
+  if AName.Trim.IsEmpty then Exit;
+
+  Qry := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+
+    //A mesma lógica das Franquias, pode ser usada nos Atores
+    Qry.SQL.Text   := 'SELECT atorId FROM Atores WHERE nome = :nome';
+    Qry.ParamByName('nome').AsString := AName;
+    Qry.Open;
+
+    if not Qry.IsEmpty then
+      Result := Qry.FieldByName('atorId').AsInteger
+    else
+    begin
+      Qry.Close;
+      Qry.SQL.Text := 'INSERT INTO Atores (nome) VALUES (:nome); SELECT SCOPE_IDENTITY() AS NewID;';
+      Qry.ParamByName('nome').AsString := AName;
+      Qry.Open;
+      Result := Qry.FieldByName('NewID').AsInteger;
+    end;
+  finally
+    FreeAndNil(Qry);
+  end;
+end;
+
+end.

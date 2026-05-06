@@ -1,0 +1,23 @@
+[
+  {
+    "nome": "Tony Stark",
+    "franquia": "Universo Cinematográfico Marvel",
+    "ator_ou_atriz": "Robert Downey Jr.",
+    "descricao": "Bilionário, gênio, playboy e filantropo que constrói uma armadura voadora de alta tecnologia.",
+    "tipo_de_midia": "Filme"
+  },
+  {
+    "nome": "Geralt de Rivia",
+    "franquia": "The Witcher",
+    "ator_ou_atriz": "Henry Cavill",
+    "descricao": "Um mutante caçador de monstros de aluguel que luta para encontrar seu lugar em um mundo corrupto.",
+    "tipo_de_midia": "Série"
+  },
+  {
+    "nome": "Luke Skywalker",
+    "franquia": "Star Wars",
+    "ator_ou_atriz": "Mark Hamill",
+    "descricao": "Um jovem fazendeiro que descobre sua ligação com a Força e se torna um grande Cavaleiro Jedi.",
+    "tipo_de_midia": "Filme"
+  }
+]
