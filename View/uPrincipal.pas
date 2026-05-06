@@ -14,14 +14,28 @@ uses
   Vcl.Dialogs,
 
   uDTMConexao, cUpdateDataBase, Vcl.StdCtrls,
-  Vcl.Buttons, PngBitBtn, cCharacterManager;
+  Vcl.Buttons, PngBitBtn, cCharacterManager, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error,
+  FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, Data.DB, Vcl.Grids, Vcl.DBGrids,
+  Vcl.ExtCtrls, FireDAC.Comp.DataSet, FireDAC.Comp.Client;
 
 type
   TfrmPrincipal = class(TForm)
     btnImportar: TPngBitBtn;
+    QryCharList: TFDQuery;
+    dtsCharList: TDataSource;
+    QryCharListpersonagemId: TFDAutoIncField;
+    QryCharListPersonagem: TStringField;
+    QryCharListFranquia: TStringField;
+    QryCharListAtor_Atriz: TStringField;
+    QryCharListMidia: TStringField;
+    QryCharListdescricao: TMemoField;
+    Panel1: TPanel;
+    pnl2: TPanel;
+    grdCharList: TDBGrid;
 
     procedure FormCreate(Sender: TObject);
     procedure btnImportarClick(Sender: TObject);
+    procedure QryCharListdescricaoGetText(Sender: TField; var Text: string; DisplayText: Boolean);
 
   private
     procedure UpdateDataBase;
@@ -90,7 +104,15 @@ end;
 
   UpdateDataBase;
 
+  QryCharList.Connection := dtmConnection.ConnectionDB;
+  QryCharList.Open;
+
   ShowMessage('Banco atualizado com sucesso!');
+end;
+
+procedure TfrmPrincipal.QryCharListdescricaoGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+begin
+  Text := Sender.AsString;
 end;
 
 procedure TfrmPrincipal.UpdateDataBase;

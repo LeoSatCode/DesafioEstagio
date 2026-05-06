@@ -8,7 +8,8 @@ uses
   cUpdateTableMSSQL in 'DAO\Migration\cUpdateTableMSSQL.pas',
   cCharacter in 'Model\cCharacter.pas',
   cCharacterService in 'Service\cCharacterService.pas',
-  cCharacterManager in 'Service\cCharacterManager.pas';
+  cCharacterManager in 'Service\cCharacterManager.pas',
+  uCharRegistration in 'View\uCharRegistration.pas' {frmCharRegistration};
 
 {$R *.res}
 
@@ -16,5 +17,6 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TfrmPrincipal, frmPrincipal);
+  Application.CreateForm(TfrmCharRegistration, frmCharRegistration);
   Application.Run;
 end.
