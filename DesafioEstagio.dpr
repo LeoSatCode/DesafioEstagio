@@ -9,7 +9,8 @@ uses
   cCharacter in 'Model\cCharacter.pas',
   cCharacterService in 'Service\cCharacterService.pas',
   cCharacterManager in 'Service\cCharacterManager.pas',
-  uCharRegistration in 'View\uCharRegistration.pas' {frmCharRegistration};
+  uCharRegistration in 'View\uCharRegistration.pas' {frmCharRegistration},
+  cGridUtils in 'Utils\cGridUtils.pas';
 
 {$R *.res}
 

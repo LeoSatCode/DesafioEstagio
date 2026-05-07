@@ -16,11 +16,10 @@ uses
   uDTMConexao, cUpdateDataBase, Vcl.StdCtrls,
   Vcl.Buttons, PngBitBtn, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error,
   FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, Data.DB, Vcl.Grids, Vcl.DBGrids,
-  Vcl.ExtCtrls, FireDAC.Comp.DataSet, FireDAC.Comp.Client;
+  Vcl.ExtCtrls, FireDAC.Comp.DataSet, FireDAC.Comp.Client, Vcl.Mask;
 
 type
   TfrmPrincipal = class(TForm)
-    btnImportar: TPngBitBtn;
     QryCharList: TFDQuery;
     dtsCharList: TDataSource;
     QryCharListpersonagemId: TFDAutoIncField;
@@ -32,18 +31,27 @@ type
     Panel1: TPanel;
     pnl2: TPanel;
     grdCharList: TDBGrid;
-    edtNovo: TPngBitBtn;
+    btnNovo: TPngBitBtn;
     btnEditar: TPngBitBtn;
     btnExcluir: TPngBitBtn;
+    btnFechar: TPngBitBtn;
+    btnImportar: TPngBitBtn;
     btnExportar: TPngBitBtn;
+    mskPesquisar: TMaskEdit;
+    btnPesquisar: TPngBitBtn;
 
     procedure FormCreate(Sender: TObject);
     procedure btnImportarClick(Sender: TObject);
     procedure QryCharListdescricaoGetText(Sender: TField; var Text: string; DisplayText: Boolean);
-    procedure edtNovoClick(Sender: TObject);
+    procedure btnNovoClick(Sender: TObject);
     procedure btnEditarClick(Sender: TObject);
     procedure btnExcluirClick(Sender: TObject);
     procedure btnExportarClick(Sender: TObject);
+    procedure grdCharListDrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn;
+      State: TGridDrawState);
+    procedure btnFecharClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+
 
   private
     procedure UpdateDataBase;
@@ -59,7 +67,7 @@ implementation
 
 {$R *.dfm}
 
-uses cCharacter, uCharRegistration,cCharacterManager, cCharacterService;
+uses cCharacter, uCharRegistration,cCharacterManager, cCharacterService, cGridUtils;
 
 
 procedure TfrmPrincipal.btnExcluirClick(Sender: TObject);
@@ -161,7 +169,12 @@ begin
   end;
 end;
 
-procedure TfrmPrincipal.edtNovoClick(Sender: TObject);
+procedure TfrmPrincipal.btnFecharClick(Sender: TObject);
+begin
+  Close;
+end;
+
+procedure TfrmPrincipal.btnNovoClick(Sender: TObject);
 var Char:    TCharacter;
     Manager: TCharacterManager;
 begin
@@ -227,6 +240,11 @@ begin
 
 end;
 
+procedure TfrmPrincipal.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  TGrid.SaveGrid(grdCharList, 'CineVerse.ini', 'Leo', Self.Name);
+end;
+
 procedure TfrmPrincipal.FormCreate(Sender: TObject);
 begin
   dtmConnection := TdtmConnection.Create(Self);
@@ -250,7 +268,15 @@ end;
   QryCharList.Connection := dtmConnection.ConnectionDB;
   QryCharList.Open;
 
+  TGrid.LoadGrid(grdCharList, 'CineVerse.ini', 'Leo', Self.Name);
   ShowMessage('Banco atualizado com sucesso!');
+end;
+
+
+procedure TfrmPrincipal.grdCharListDrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn;
+  State: TGridDrawState);
+begin
+  TGrid.ZebrarGrid(TDBGrid(Sender), State, Column, Rect, DataCol);
 end;
 
 procedure TfrmPrincipal.QryCharListdescricaoGetText(Sender: TField; var Text: string; DisplayText: Boolean);

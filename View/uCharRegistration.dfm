@@ -1,9 +1,10 @@
 object frmCharRegistration: TfrmCharRegistration
   Left = 0
   Top = 0
+  BorderStyle = bsToolWindow
   Caption = 'Cadastro de Personagem'
-  ClientHeight = 460
-  ClientWidth = 520
+  ClientHeight = 470
+  ClientWidth = 530
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,18 +13,18 @@ object frmCharRegistration: TfrmCharRegistration
   Font.Style = []
   OldCreateOrder = True
   Position = poScreenCenter
-  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 15
   object pnlHeader: TPanel
     Left = 0
     Top = 0
-    Width = 520
+    Width = 530
     Height = 70
     Align = alTop
     BevelOuter = bvNone
     ParentBackground = False
     TabOrder = 0
+    ExplicitWidth = 520
     object lblTitle: TLabel
       Left = 20
       Top = 25
@@ -41,11 +42,13 @@ object frmCharRegistration: TfrmCharRegistration
   object pnlContent: TPanel
     Left = 0
     Top = 70
-    Width = 520
-    Height = 322
+    Width = 530
+    Height = 332
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
+    ExplicitWidth = 520
+    ExplicitHeight = 322
     object lblName: TLabel
       Left = 20
       Top = 20
@@ -123,31 +126,40 @@ object frmCharRegistration: TfrmCharRegistration
   end
   object pnlFooter: TPanel
     Left = 0
-    Top = 392
-    Width = 520
+    Top = 402
+    Width = 530
     Height = 68
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
+    ExplicitTop = 392
+    ExplicitWidth = 520
+    DesignSize = (
+      530
+      68)
     object btnSave: TPngBitBtn
-      Left = 300
+      Left = 20
       Top = 20
-      Width = 90
+      Width = 100
       Height = 32
-      Caption = 'Salvar'
+      Anchors = [akLeft, akTop, akRight]
+      Caption = 'SALVAR'
       Default = True
       TabOrder = 0
       OnClick = btnSaveClick
+      ExplicitWidth = 90
     end
     object btnCancel: TPngBitBtn
-      Left = 400
+      Left = 116
       Top = 20
-      Width = 90
+      Width = 100
       Height = 32
+      Anchors = [akLeft, akTop, akRight]
       Cancel = True
-      Caption = 'Cancelar'
+      Caption = 'CANCELAR'
       TabOrder = 1
       OnClick = btnCancelClick
+      ExplicitWidth = 90
     end
   end
 end

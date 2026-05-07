@@ -1,9 +1,10 @@
 object frmPrincipal: TfrmPrincipal
   Left = 0
   Top = 0
+  BorderStyle = bsToolWindow
   Caption = 'frmPrincipal'
-  ClientHeight = 394
-  ClientWidth = 824
+  ClientHeight = 404
+  ClientWidth = 905
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,43 +12,88 @@ object frmPrincipal: TfrmPrincipal
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object Panel1: TPanel
     Left = 0
     Top = 0
-    Width = 824
-    Height = 41
+    Width = 905
+    Height = 81
     Align = alTop
-    Caption = 'Panel1'
+    BevelOuter = bvNone
     TabOrder = 0
-  end
-  object pnl2: TPanel
-    Left = 0
-    Top = 352
-    Width = 824
-    Height = 42
-    Align = alBottom
-    Caption = 'pnl2'
-    TabOrder = 1
+    ExplicitTop = -6
     object btnImportar: TPngBitBtn
-      Left = 472
-      Top = 9
-      Width = 75
+      Left = 692
+      Top = 48
+      Width = 101
       Height = 25
-      Caption = 'IMPORTAR'
+      Caption = 'Importar JSON'
       TabOrder = 0
       OnClick = btnImportarClick
     end
-    object edtNovo: TPngBitBtn
+    object btnExportar: TPngBitBtn
+      Left = 799
+      Top = 48
+      Width = 99
+      Height = 25
+      Caption = 'Exportar JSON'
+      TabOrder = 1
+      OnClick = btnExportarClick
+    end
+    object mskPesquisar: TMaskEdit
+      Left = 0
+      Top = 52
+      Width = 172
+      Height = 21
+      TabOrder = 2
+      Text = 'mskPesquisar'
+    end
+    object btnPesquisar: TPngBitBtn
+      Left = 178
+      Top = 50
+      Width = 95
+      Height = 25
+      Caption = 'PESQUISAR'
+      TabOrder = 3
+      PngImage.Data = {
+        89504E470D0A1A0A0000000D49484452000000100000001008060000001FF3FF
+        61000000097048597300000B1300000B1301009A9C180000011B4944415478DA
+        6364A01030E293949494E4025215401C05C4B240FC188897323333773C79F2E4
+        3B5E03A09AF702F19BFFFFFF3701F1354646462D20AE038A09010D71011982CF
+        80262065F8FCF9735F2C729B81069D79F6EC59233E03EE006D8D78F1E2C51974
+        3909090953A001CB8086ABE233E0DBAF5FBFC4DFBE7DFB195D4E585898978D8D
+        ED35D0000E7C065C02BA20098F0B96020D50C3698094945431D000073C61701A
+        18064DF85CE00654B41368C816502CFCFDFBF73A30E43541B100C482ACACAC2E
+        0F1F3EFC81D50069696907A0A695401C0B54AC0BA4E380C2AA40FC14C85F0CD4
+        DC05D28C351D006DB6012A5A0BC4914F9F3EDDC740003052A219C5007234A318
+        000CF54540CDF3809A0F10AB196B18900A283600001D378411B9615874000000
+        0049454E44AE426082}
+    end
+  end
+  object pnl2: TPanel
+    Left = 0
+    Top = 362
+    Width = 905
+    Height = 42
+    Align = alBottom
+    TabOrder = 1
+    ExplicitTop = 368
+    ExplicitWidth = 993
+    DesignSize = (
+      905
+      42)
+    object btnNovo: TPngBitBtn
       Left = 16
       Top = 9
       Width = 75
       Height = 25
       Caption = 'NOVO'
-      TabOrder = 1
-      OnClick = edtNovoClick
+      TabOrder = 0
+      OnClick = btnNovoClick
       PngImage.Data = {
         89504E470D0A1A0A0000000D49484452000000100000001008060000001FF3FF
         61000000097048597300000B1300000B1301009A9C18000001334944415478DA
@@ -69,7 +115,7 @@ object frmPrincipal: TfrmPrincipal
       Width = 75
       Height = 25
       Caption = 'EDITAR'
-      TabOrder = 2
+      TabOrder = 1
       OnClick = btnEditarClick
       PngImage.Data = {
         89504E470D0A1A0A0000000D49484452000000100000001008060000001FF3FF
@@ -92,7 +138,7 @@ object frmPrincipal: TfrmPrincipal
       Width = 75
       Height = 25
       Caption = 'EXCLUIR'
-      TabOrder = 3
+      TabOrder = 2
       OnClick = btnExcluirClick
       PngImage.Data = {
         89504E470D0A1A0A0000000D49484452000000100000001008060000001FF3FF
@@ -103,29 +149,42 @@ object frmPrincipal: TfrmPrincipal
         003059FF444F91E82E68052A2AC16608AE3C81352F9002283600009740A411A2
         2B1A210000000049454E44AE426082}
     end
-    object btnExportar: TPngBitBtn
-      Left = 553
+    object btnFechar: TPngBitBtn
+      Left = 823
       Top = 9
       Width = 75
       Height = 25
-      Caption = 'EXPORTAR'
-      TabOrder = 4
-      OnClick = btnExportarClick
+      Anchors = [akTop, akRight]
+      Cancel = True
+      Caption = 'FECHAR'
+      TabOrder = 3
+      OnClick = btnFecharClick
+      ExplicitLeft = 742
     end
   end
   object grdCharList: TDBGrid
     Left = 0
-    Top = 41
-    Width = 824
-    Height = 311
+    Top = 81
+    Width = 905
+    Height = 281
     Align = alClient
     DataSource = dtsCharList
+    DrawingStyle = gdsClassic
+    FixedColor = clGray
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    ReadOnly = True
     TabOrder = 2
     TitleFont.Charset = DEFAULT_CHARSET
-    TitleFont.Color = clWindowText
+    TitleFont.Color = clWhite
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
-    TitleFont.Style = []
+    TitleFont.Style = [fsBold]
+    OnDrawColumnCell = grdCharListDrawColumnCell
     Columns = <
       item
         Expanded = False
@@ -156,7 +215,7 @@ object frmPrincipal: TfrmPrincipal
         Expanded = False
         FieldName = 'Midia'
         Title.Caption = 'M'#237'dia'
-        Width = 100
+        Width = 91
         Visible = True
       end
       item
