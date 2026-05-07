@@ -14,10 +14,11 @@ Type
     function GetOrCreateActor(const AName: string): Integer;
 
   public
-    procedure SavetoDatabase(ACharacter: TCharacter);
     constructor Create(AConnection: TFDConnection);
-    function ImportFromFile(const AFilePath: string): Integer; //Função que será chmada pelo Form
+    procedure SavetoDatabase(ACharacter: TCharacter);
     procedure DeleteFromDatabase(const AId: Integer);
+    function ImportFromFile(const AFilePath: string): Integer; //Função que será chmada pelo Form
+    function GetAllCharacters: TObjectList<TCharacter>;
   end;
 
 implementation
@@ -48,6 +49,8 @@ begin
     begin
       for Character in CharacterList do //Percorremos so personagens da lista
       begin
+        Character.Id := 0;//Zeramos o ID para forçar o Manager a entrar no INSERT e não tentar dar UPDATE nos registros existentes ou que não existem
+
         SavetoDatabase(Character); // Chamamos a persistência para cada item da lista
         Inc(Result); //Faz a contagem dos itens bem sucedidos
       end;
@@ -173,6 +176,39 @@ begin
     end;
   finally
     FreeAndNil(Qry);
+  end;
+end;
+
+function TCharacterManager.GetAllCharacters: TObjectList<TCharacter>;
+var Qry:  TFDQuery;
+    Char: TCharacter;
+begin
+  Result := TObjectList<TCharacter>.Create(True);
+  Qry    := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+
+    //O SELECT maroto com os JOINs
+    Qry.Open('SELECT P.personagemId, P.nome, P.descricao, P.tipoMidia, F.nome as Franquia, A.nome as Ator ' +
+             'FROM Personagens P ' +
+             'LEFT JOIN Franquias F ON F.franquiaId = P.franquiaId ' +
+             'LEFT JOIN Atores A ON A.atorId = P.atorId');
+
+    while not Qry.Eof do //Enquanto a Qry não estiver vazia.
+    begin
+      Char                := TCharacter.Create;
+      Char.Id             := Qry.FieldByName('personagemId').AsInteger;
+      Char.Name           := Qry.FieldByName('nome').AsString;
+      Char.Description    := Qry.FieldByName('descricao').AsString;
+      Char.MediaType      := Qry.FieldByName('tipoMidia').AsString;
+      Char.Franchise      := Qry.FieldByName('Franquia').AsString;
+      Char.ActorOrActress := Qry.FieldByName('Ator').AsString;
+
+      Result.Add(Char);
+      Qry.Next;
+    end;
+  finally
+    Qry.Free;
   end;
 end;
 

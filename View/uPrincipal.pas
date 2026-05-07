@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows,
   Winapi.Messages,
-  System.SysUtils,
+  System.SysUtils, System.Generics.Collections,
   System.Variants,
   System.Classes,
   Vcl.Graphics,
@@ -14,7 +14,7 @@ uses
   Vcl.Dialogs,
 
   uDTMConexao, cUpdateDataBase, Vcl.StdCtrls,
-  Vcl.Buttons, PngBitBtn, cCharacterManager, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error,
+  Vcl.Buttons, PngBitBtn, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error,
   FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, Data.DB, Vcl.Grids, Vcl.DBGrids,
   Vcl.ExtCtrls, FireDAC.Comp.DataSet, FireDAC.Comp.Client;
 
@@ -35,6 +35,7 @@ type
     edtNovo: TPngBitBtn;
     btnEditar: TPngBitBtn;
     btnExcluir: TPngBitBtn;
+    btnExportar: TPngBitBtn;
 
     procedure FormCreate(Sender: TObject);
     procedure btnImportarClick(Sender: TObject);
@@ -42,6 +43,7 @@ type
     procedure edtNovoClick(Sender: TObject);
     procedure btnEditarClick(Sender: TObject);
     procedure btnExcluirClick(Sender: TObject);
+    procedure btnExportarClick(Sender: TObject);
 
   private
     procedure UpdateDataBase;
@@ -57,7 +59,7 @@ implementation
 
 {$R *.dfm}
 
-uses cCharacter, uCharRegistration;
+uses cCharacter, uCharRegistration,cCharacterManager, cCharacterService;
 
 
 procedure TfrmPrincipal.btnExcluirClick(Sender: TObject);
@@ -118,6 +120,45 @@ begin
     OpenDialog.Free; // Tira a janelinha da memória
   end;
   QryCharList.Refresh;
+end;
+
+procedure TfrmPrincipal.btnExportarClick(Sender: TObject);
+var Manager:    TCharacterManager;
+    SaveDialog: TSaveDialog;
+    List:       TObjectList<TCharacter>;
+begin
+  if QryCharList.IsEmpty then //Novamente se a lista estiver vazia é tchau brigado
+  begin
+     ShowMessage('Não há dados para exportar!');
+     Exit;
+  end;
+
+  SaveDialog := TSaveDialog.Create(nil);
+  try
+    SaveDialog.Filter := 'Arquivo JSON (*.json)|*.json';
+    SaveDialog.DefaultExt := 'json';
+    SaveDialog.FileName := 'CineVerse_Export.json';
+
+    if SaveDialog.Execute then
+    begin
+      Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
+      try
+        List  := Manager.GetAllCharacters; //O Manager busca lá no banco todos os personagens
+        try
+          if TCharacterService.SaveToFile(List, SaveDialog.FileName) then // O Service gera o JSON
+            ShowMessage('Dados exportados com sucesso para JSON!')
+          else
+            ShowMessage('Falha ao exportar dados.');
+        finally
+          List.Free;
+        end;
+      finally
+        Manager.Free;
+      end;
+    end;
+  finally
+    SaveDialog.Free;
+  end;
 end;
 
 procedure TfrmPrincipal.edtNovoClick(Sender: TObject);

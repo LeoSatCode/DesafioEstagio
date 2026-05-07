@@ -32,7 +32,7 @@ object frmPrincipal: TfrmPrincipal
     Caption = 'pnl2'
     TabOrder = 1
     object btnImportar: TPngBitBtn
-      Left = 616
+      Left = 472
       Top = 9
       Width = 75
       Height = 25
@@ -45,7 +45,7 @@ object frmPrincipal: TfrmPrincipal
       Top = 9
       Width = 75
       Height = 25
-      Caption = 'Novo'
+      Caption = 'NOVO'
       TabOrder = 1
       OnClick = edtNovoClick
       PngImage.Data = {
@@ -68,7 +68,7 @@ object frmPrincipal: TfrmPrincipal
       Top = 9
       Width = 75
       Height = 25
-      Caption = 'Editar'
+      Caption = 'EDITAR'
       TabOrder = 2
       OnClick = btnEditarClick
       PngImage.Data = {
@@ -91,7 +91,7 @@ object frmPrincipal: TfrmPrincipal
       Top = 9
       Width = 75
       Height = 25
-      Caption = 'Excluir'
+      Caption = 'EXCLUIR'
       TabOrder = 3
       OnClick = btnExcluirClick
       PngImage.Data = {
@@ -102,6 +102,15 @@ object frmPrincipal: TfrmPrincipal
         F6B367CF18310C20D61064CD380D002902B1D1E95103868401A014084ABEB8D2
         003059FF444F91E82E68052A2AC16608AE3C81352F9002283600009740A411A2
         2B1A210000000049454E44AE426082}
+    end
+    object btnExportar: TPngBitBtn
+      Left = 553
+      Top = 9
+      Width = 75
+      Height = 25
+      Caption = 'EXPORTAR'
+      TabOrder = 4
+      OnClick = btnExportarClick
     end
   end
   object grdCharList: TDBGrid
