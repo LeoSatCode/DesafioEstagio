@@ -12,6 +12,7 @@ object frmCharRegistration: TfrmCharRegistration
   Font.Style = []
   OldCreateOrder = True
   Position = poScreenCenter
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 15
   object pnlHeader: TPanel
@@ -110,10 +111,7 @@ object frmCharRegistration: TfrmCharRegistration
       TabOrder = 3
       Items.Strings = (
         'Filme'
-        'S'#195#169'rie'
-        'Anime'
-        'Jogo'
-        'Outro')
+        'S'#233'rie')
     end
     object memDescription: TMemo
       Left = 20
@@ -139,6 +137,7 @@ object frmCharRegistration: TfrmCharRegistration
       Caption = 'Salvar'
       Default = True
       TabOrder = 0
+      OnClick = btnSaveClick
     end
     object btnCancel: TPngBitBtn
       Left = 400
@@ -148,6 +147,7 @@ object frmCharRegistration: TfrmCharRegistration
       Cancel = True
       Caption = 'Cancelar'
       TabOrder = 1
+      OnClick = btnCancelClick
     end
   end
 end

@@ -9,13 +9,15 @@ Type
   TCharacterManager = class  //A ponte reintroduce o arquivo, o processamento de dados e a persistencia no banco
   private
     FConnection: TFDConnection;
-    procedure SavetoDatabase(ACharacter: TCharacter);
+
     function GetOrCreateFranchise(const AName: string): Integer;
     function GetOrCreateActor(const AName: string): Integer;
 
   public
+    procedure SavetoDatabase(ACharacter: TCharacter);
     constructor Create(AConnection: TFDConnection);
     function ImportFromFile(const AFilePath: string): Integer; //Função que será chmada pelo Form
+    procedure DeleteFromDatabase(const AId: Integer);
   end;
 
 implementation
@@ -65,11 +67,26 @@ begin
   Qry := TFDQuery.Create(nil);
   try
     Qry.Connection := FConnection;
-    Qry.SQL.Text   := 'IF NOT EXISTS (SELECT 1 FROM Personagens WHERE nome = :nome AND franquiaId = :franquiaId) '+//Já faz o tratamento de duplicidades
-                    'BEGIN '+                                                                                      //e insere personagens APENAS se não existirem
-                    ' INSERT INTO Personagens (nome, descricao, tipoMidia, franquiaId, atorId) '+                  //naquela franquia.
-                    ' VALUES (:nome, :descricao, :tipoMidia, :franquiaId, :atorId) '+
-                    'END';
+
+    if ACharacter.Id > 0 then //Se já tiver um Id, faz o UPDATE
+    begin
+      Qry.SQL.Text := 'UPDATE Personagens SET '+
+                      ' nome = :nome, '+
+                      ' descricao = :descricao, '+
+                      ' tipoMidia = :tipoMidia, '+
+                      ' franquiaId = :franquiaId, '+
+                      ' atorId = :atorId '+
+                      'WHERE personagemId = :id';
+      Qry.ParamByName('id').AsInteger := ACharacter.Id;
+    end
+    else //Do contrário, faz o INSERT
+    begin
+      Qry.SQL.Text := 'IF NOT EXISTS (SELECT 1 FROM Personagens WHERE nome = :nome AND franquiaId = :franquiaId) '+//Já faz o tratamento de duplicidades
+                      'BEGIN '+                                                                                      //e insere personagens APENAS se não existirem
+                      ' INSERT INTO Personagens (nome, descricao, tipoMidia, franquiaId, atorId) '+                  //naquela franquia.
+                      ' VALUES (:nome, :descricao, :tipoMidia, :franquiaId, :atorId) '+
+                      'END';
+    end;
 
     Qry.ParamByName('nome').AsString        := ACharacter.Name;
     Qry.ParamByName('descricao').AsString   := ACharacter.Description;
@@ -78,6 +95,21 @@ begin
     Qry.ParamByName('franquiaId').AsInteger := VFranchiseId;
     Qry.ParamByName('atorId').AsInteger     := VActorId;
 
+    Qry.ExecSQL;
+  finally
+    FreeAndNil(Qry);
+  end;
+end;
+
+procedure TCharacterManager.DeleteFromDatabase(const AId: Integer);
+var
+  Qry: TFDQuery;
+begin
+  Qry := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+    Qry.SQL.Text := 'DELETE FROM Personagens WHERE personagemId = :id';
+    Qry.ParamByName('id').AsInteger := AId;
     Qry.ExecSQL;
   finally
     FreeAndNil(Qry);

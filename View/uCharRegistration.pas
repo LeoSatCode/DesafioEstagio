@@ -89,11 +89,13 @@ procedure TfrmCharRegistration.ObjectToScreen;
 begin
   if Assigned(FCharacter) then
   begin
-    edtName.Text := FCharacter.Name;
-    cmbFranchise.Text := FCharacter.Franchise;
-    cmbActor.Text := FCharacter.ActorOrActress;
-    cmbMedia.Text := FCharacter.MediaType;
+    edtName.Text        := FCharacter.Name;
+    cmbFranchise.Text   := FCharacter.Franchise;
+    cmbActor.Text       := FCharacter.ActorOrActress;
+    cmbMedia.Text       := FCharacter.MediaType;
     memDescription.Text := FCharacter.Description;
+
+    cmbMedia.ItemIndex  := cmbMedia.Items.IndexOf(FCharacter.MediaType); //Recupera o tipo de media ao carregar um personagem existente.
 
     if FCharacter.Id > 0 then
       lblTitle.Caption := 'Editar Personagem'
@@ -104,16 +106,16 @@ end;
 
 procedure TfrmCharRegistration.ScreenToObject;
 begin
-  FCharacter.Name := edtName.Text;
-  FCharacter.Franchise := cmbFranchise.Text;
+  FCharacter.Name           := edtName.Text;
+  FCharacter.Franchise      := cmbFranchise.Text;
   FCharacter.ActorOrActress := cmbActor.Text;
-  FCharacter.MediaType := cmbMedia.Text;
-  FCharacter.Description := memDescription.Text;
+  FCharacter.MediaType      := cmbMedia.Text;
+  FCharacter.Description    := memDescription.Text;
 end;
 
 procedure TfrmCharRegistration.btnSaveClick(Sender: TObject);
 begin
-  // Validação simples usando o método Trim clássico do SysUtils
+  // Validação simples usando o método Trim
   if Trim(edtName.Text) = '' then
   begin
     ShowMessage('O nome do personagem é obrigatório!');

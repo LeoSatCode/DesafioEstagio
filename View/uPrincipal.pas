@@ -32,10 +32,16 @@ type
     Panel1: TPanel;
     pnl2: TPanel;
     grdCharList: TDBGrid;
+    edtNovo: TPngBitBtn;
+    btnEditar: TPngBitBtn;
+    btnExcluir: TPngBitBtn;
 
     procedure FormCreate(Sender: TObject);
     procedure btnImportarClick(Sender: TObject);
     procedure QryCharListdescricaoGetText(Sender: TField; var Text: string; DisplayText: Boolean);
+    procedure edtNovoClick(Sender: TObject);
+    procedure btnEditarClick(Sender: TObject);
+    procedure btnExcluirClick(Sender: TObject);
 
   private
     procedure UpdateDataBase;
@@ -50,6 +56,35 @@ var
 implementation
 
 {$R *.dfm}
+
+uses cCharacter, uCharRegistration;
+
+
+procedure TfrmPrincipal.btnExcluirClick(Sender: TObject);
+var Manager: TCharacterManager;
+    PersonagemId: Integer;
+    NomePersonagem: string;
+begin
+  if QryCharList.IsEmpty then Exit; // Se a grid estiver vazia, é tchau brigado
+
+  PersonagemId   := QryCharList.FieldByName('personagemId').AsInteger; //Carrega os dados do personagem selecionado antes de apagar
+  NomePersonagem := QryCharList.FieldByName('Personagem').AsString;
+
+  // PVerificação para confirmação da exclusão
+  if MessageDlg('Tem certeza que deseja excluir o personagem "' + NomePersonagem + '" da base de dados?',
+    mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  begin
+    Manager := TCharacterManager.Create(dtmConnection.ConnectionDB); //Joga a responsabilidade da exclusão pro nosso Manager que contém o CRUD
+    try
+      Manager.DeleteFromDatabase(PersonagemId); // Chama o método de exclusão
+
+      QryCharList.Refresh;
+      ShowMessage('Personagem excluído com sucesso!');
+    finally
+      Manager.Free;
+    end;
+  end;
+end;
 
 procedure TfrmPrincipal.btnImportarClick(Sender: TObject);
 var
@@ -82,6 +117,73 @@ begin
   finally
     OpenDialog.Free; // Tira a janelinha da memória
   end;
+  QryCharList.Refresh;
+end;
+
+procedure TfrmPrincipal.edtNovoClick(Sender: TObject);
+var Char:    TCharacter;
+    Manager: TCharacterManager;
+begin
+  Char := TCharacter.Create; //Criação de um personagem zerado em memória
+
+  frmCharRegistration := TfrmCharRegistration.Create(Self); //Instância da tela de cadastro
+
+  try
+    frmCharRegistration.Character := Char; //Personagem zeradinho pra tela (Injeção de Dependência)
+
+    if frmCharRegistration.ShowModal = mrOk then //Se o usuário clicar em "Salvar", entra no IF
+    begin
+      Manager := TCharacterManager.Create(dtmConnection.ConnectionDB); //Como o usuário confirmou, então é criada a instância da nossa conexão com o banco
+      try
+        Manager.SaveToDatabase(Char); //Salva o personagem com o mesmo método usado para o JSON
+        QryCharList.Refresh; //Atualizamos a Grid
+      finally
+        Manager.Free;
+      end;
+    end;
+  finally
+    frmCharRegistration.Free;
+    Char.Free;
+  end;
+end;
+
+procedure TfrmPrincipal.btnEditarClick(Sender: TObject);
+var Char:    TCharacter;
+    Manager: TCharacterManager;
+begin
+  if QryCharList.IsEmpty then Exit; //Se o grid estiver vazio é tchau, bragido
+
+  Char := TCharacter.Create;
+
+  //Preenchimento dos dados do personagem da linha selecionada utilizando os Aliases do SELECT na QryCharList
+  Char.Id             := QryCharList.FieldByName('personagemId').AsInteger;
+  Char.Name           := QryCharList.FieldByName('Personagem').  AsString;
+  Char.Franchise      := QryCharList.FieldByName('Franquia').    AsString;
+  Char.ActorOrActress := QryCharList.FieldByName('Ator_Atriz').  AsString;
+  Char.MediaType      := QryCharList.FieldByName('Midia').       AsString;
+  Char.Description    := QryCharList.FieldByName('descricao').   AsString;
+
+  frmCharRegistration := TfrmCharRegistration.Create(Self); //Instância da tela igual do botão NOVO
+  try
+    frmCharRegistration.Character := Char; //Injeção de dependência
+
+    if frmCharRegistration.ShowModal = mrOk then  //Se o usuário clicou em editar
+    begin
+      Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);//Cria a instância da conexão com o banco de dados
+      try
+        Manager.SavetoDatabase(Char); //Chamamos o método para salvar as alterações
+
+        QryCharList.Refresh; //Refresh maroto pra atualizar o grid
+        ShowMessage('Personagem atualizado com sucesso!');
+      finally
+        Manager.Free; //Limpamos da memória
+      end;
+    end;
+  finally
+    frmCharRegistration.Free; //Aqui também
+    Char.Free;
+  end;
+
 end;
 
 procedure TfrmPrincipal.FormCreate(Sender: TObject);
