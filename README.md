@@ -20,7 +20,7 @@ Sistema desenvolvido para o Desafio de Estágio (DomTec), focado na gestão efic
 
 O sistema foi projetado com foco na **Experiência do Avaliador**, possuindo uma rotina de auto-configuração (Zero Fricção).
 
-> 📦 **AVALIAÇÃO RÁPIDA (RECOMENDADO):** > Para testar o sistema sem necessidade de compilar, **[baixe a Versão Final na aba Releases aqui](https://github.com/SeuUsuario/DesafioEstagio/releases/latest)**. O pacote já contém o executável, o arquivo de configuração pré-montado, os scripts SQL e um arquivo JSON para testes.
+> 📦 **AVALIAÇÃO RÁPIDA (RECOMENDADO):** > Para testar o sistema sem necessidade de compilar, **[baixe a Versão Final na aba Releases aqui]([https://github.com/SeuUsuario/DesafioEstagio/releases/latest](https://github.com/LeoSatCode/DesafioEstagio/releases/tag/v1.0))**. O pacote já contém o executável, o arquivo de configuração pré-montado, os scripts SQL e um arquivo JSON para testes.
 
 **Passo a Passo de Execução:**
 1. Extraia a pasta baixada.
