@@ -73,7 +73,7 @@ implementation
 
 {$R *.dfm}
 
-uses cCharacter, uCharRegistration,cCharacterManager, cCharacterService, cGridUtils, cSearchUtils;
+uses cCharacter, uCharRegistration,cCharacterManager, cCharacterService, cGridUtils, cSearchUtils, cIniFile;
 
 
 procedure TfrmPrincipal.btnExcluirClick(Sender: TObject);
@@ -273,29 +273,81 @@ begin
 end;
 
 procedure TfrmPrincipal.FormCreate(Sender: TObject);
+var
+  ConfigService: TConfigService;
+  ParamsDB: TConnectionParams;
+  IniPath: string;
 begin
+  // 1. Instancia o serviço de INI e resgata/cria as configurações
+  ConfigService := TConfigService.Create;
+  try
+    ParamsDB := ConfigService.GetConnectionParams;
+
+    IniPath := ExtractFilePath(Application.ExeName) + 'Config.ini';
+    if not FileExists(IniPath) then
+      ConfigService.SaveDefaultConfig(ParamsDB); // Se não existe, cria pra facilitar a vida do Jurado
+  finally
+    ConfigService.Free;
+  end;
+
+  // 2. Instancia o DataModule
   dtmConnection := TdtmConnection.Create(Self);
 
- with dtmConnection.ConnectionDB.Params do
-begin
-  Clear;
+  // 3. Configura a conexão de forma inteligente
+  with dtmConnection.ConnectionDB do
+  begin
+    Close;
+    Params.Clear;
+    Params.Add('DriverID=MSSQL');
+    Params.Add('Server=' + ParamsDB.Server);
+    Params.Add('Database=master'); // Conexão "cobaia" na master para tentar criar o banco
 
-  Add('DriverID=MSSQL');
-  Add('Server=DC-TR-05-VM\SERVERCURSO');
-  Add('Database=CineVerseDB');
-  Add('User_Name=sa');
-  Add('Password=domtec@10');
-end;
+    // Define a Autenticação do Windows ou SQL Server Autentication
+    if ParamsDB.OSAuthent then
+    begin
+      Params.Add('OSAuthent=Yes');
+    end
+    else
+    begin
+      Params.Add('OSAuthent=No');
+      Params.Add('User_Name=' + ParamsDB.UserName);
+      Params.Add('Password=' + ParamsDB.Password);
+    end;
 
-  dtmConnection.ConnectionDB.LoginPrompt := False;
-  dtmConnection.ConnectionDB.Connected := True;
+    LoginPrompt := False;
 
+    try
+      Connected := True;
+
+      // Mágica acontecendo: Cria o CineVerseDB caso o Jurado não tenha criado
+      ExecSQL('IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = ' + QuotedStr(ParamsDB.Database) + ') ' +
+              'CREATE DATABASE ' + ParamsDB.Database);
+
+      Connected := False;
+
+      // Aponta para o banco oficial do projeto e conecta valendo
+      Params.Values['Database'] := ParamsDB.Database;
+      Connected := True;
+    except
+      on E: Exception do
+      begin
+        ShowMessage('Erro crítico de conexão com o Banco de Dados!' + sLineBreak + sLineBreak +
+                    'Abra o arquivo Config.ini gerado na pasta do sistema e ajuste o "Server".' + sLineBreak + sLineBreak +
+                    'Detalhe técnico: ' + E.Message);
+        Halt; // Fecha a aplicação graciosamente se der B.O. na conexão
+      end;
+    end;
+  end;
+
+  // 4. Cria as tabelas caso seja o primeiro acesso (Migration via código)
   UpdateDataBase;
 
+  // 5. Liga as Queries na conexão pronta e exibe na Grid
   QryCharList.Connection := dtmConnection.ConnectionDB;
   QryCharList.Open;
   QryCharList.FetchAll; // Traz tudo pra RAM!
 
+  // 6. Carrega configurações visuais
   try
     TGrid.LoadGrid(grdCharList, 'CineVerse.ini', 'Leo', Self.Name);
   finally

@@ -47,6 +47,8 @@ object frmCharRegistration: TfrmCharRegistration
     Height = 332
     Align = alClient
     BevelOuter = bvNone
+    Color = 16053492
+    ParentBackground = False
     TabOrder = 1
     object lblName: TLabel
       Left = 20

@@ -1272,7 +1272,7 @@ object frmPrincipal: TfrmPrincipal
       Left = 560
       Top = 180
       Width = 231
-      Height = 22
+      Height = 21
       Cursor = crIBeam
       Anchors = [akTop, akRight]
       TabOrder = 2
@@ -1321,7 +1321,6 @@ object frmPrincipal: TfrmPrincipal
     Color = 13619151
     ParentBackground = False
     TabOrder = 1
-    ExplicitTop = 362
     DesignSize = (
       905
       42)

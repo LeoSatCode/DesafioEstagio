@@ -11,7 +11,10 @@ uses
   cCharacterManager in 'Service\cCharacterManager.pas',
   uCharRegistration in 'View\uCharRegistration.pas' {frmCharRegistration},
   cGridUtils in 'Utils\cGridUtils.pas',
-  cSearchUtils in 'Utils\cSearchUtils.pas';
+  cSearchUtils in 'Utils\cSearchUtils.pas',
+  cIniFile in 'Utils\cIniFile.pas',
+  Vcl.Themes,
+  Vcl.Styles;
 
 {$R *.res}
 
