@@ -10,7 +10,8 @@ uses
   cCharacterService in 'Service\cCharacterService.pas',
   cCharacterManager in 'Service\cCharacterManager.pas',
   uCharRegistration in 'View\uCharRegistration.pas' {frmCharRegistration},
-  cGridUtils in 'Utils\cGridUtils.pas';
+  cGridUtils in 'Utils\cGridUtils.pas',
+  cSearchUtils in 'Utils\cSearchUtils.pas';
 
 {$R *.res}
 

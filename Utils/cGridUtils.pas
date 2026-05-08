@@ -1,5 +1,5 @@
 ﻿unit cGridUtils;
-
+
 interface
 
 uses
@@ -10,9 +10,10 @@ uses
 type
   TGrid = class
   public
-    class function GetColumnByFieldName(Grid: TDBGrid; const AFieldName: string): TColumn; static;
-    class procedure SaveGrid(Grid: TDBGrid; const NomeINI, NomeUsuario, NomeForm: string); static;
-    class procedure LoadGrid(Grid: TDBGrid; const NomeINI, NomeUsuario, NomeForm: string); static;
+    class function  GetColumnByFieldName(Grid: TDBGrid; const AFieldName: string): TColumn; static;
+    class procedure SaveGrid(Grid: TDBGrid; const NomeINI, UserName, NomeForm: string); static;
+    class procedure LoadGrid(Grid: TDBGrid; const NomeINI, UserName, NomeForm: string); static;
+    class procedure OrderGrid(Column: TColumn); static;
     class procedure ZebrarGrid(Grid: TDBGrid; State: TGridDrawState; Column: TColumn; Rect: TRect; DataCol: Integer);
   end;
 
@@ -25,72 +26,88 @@ var
   I: Integer;
 begin
   Result := nil;
-  for I := 0 to Grid.Columns.Count - 1 do
+  for I  := 0 to Grid.Columns.Count - 1 do
   begin
     if SameText(Grid.Columns[I].FieldName, AFieldName) then
       Exit(Grid.Columns[I]);
   end;
 end;
 
-class procedure TGrid.SaveGrid(Grid: TDBGrid; const NomeINI, NomeUsuario, NomeForm: string);
+class procedure TGrid.SaveGrid(Grid: TDBGrid; const NomeINI, UserName, NomeForm: string);
 var
-  ArquivoINI: TIniFile;
+  INIFile: TIniFile;
   I: Integer;
-  Secao: string;
+  Section: string;
 begin
-  ArquivoINI := TIniFile.Create(ExtractFilePath(Application.ExeName) + NomeINI);
+  INIFile   := TIniFile.Create(ExtractFilePath(Application.ExeName) + NomeINI);
   try
-    Secao := NomeUsuario + '_' + NomeForm;
+    Section := UserName + '_' + NomeForm;
 
     for I := 0 to Grid.Columns.Count - 1 do
     begin
-      ArquivoINI.WriteInteger(Secao, Grid.Columns[I].FieldName + '.Width', Grid.Columns[I].Width);
-      ArquivoINI.WriteInteger(Secao, Grid.Columns[I].FieldName + '.Index', Grid.Columns[I].Index);
+      INIFile.WriteInteger(Section, Grid.Columns[I].FieldName + '.Width', Grid.Columns[I].Width);
+      INIFile.WriteInteger(Section, Grid.Columns[I].FieldName + '.Index', Grid.Columns[I].Index);
     end;
   finally
-    ArquivoINI.Free;
+    INIFile.Free;
   end;
 end;
 
-class procedure TGrid.LoadGrid(Grid: TDBGrid; const NomeINI, NomeUsuario, NomeForm: string);
+class procedure TGrid.LoadGrid(Grid: TDBGrid; const NomeINI, UserName, NomeForm: string);
 var
-  ArquivoINI: TIniFile;
+  INIFile: TIniFile;
   I, NewIndex: Integer;
   Col: TColumn;
-  Secao: string;
+  Section: string;
 begin
-  ArquivoINI := TIniFile.Create(ExtractFilePath(Application.ExeName) + NomeINI);
+  INIFile   := TIniFile.Create(ExtractFilePath(Application.ExeName) + NomeINI);
   try
-    Secao := NomeUsuario + '_' + NomeForm;
+    Section := UserName + '_' + NomeForm;
     Grid.Columns.BeginUpdate;
     try
       for I := 0 to Grid.Columns.Count - 1 do
       begin
         Col := Grid.Columns[I];
-        NewIndex := ArquivoINI.ReadInteger(Secao, Col.FieldName + '.Index', Col.Index);
+        NewIndex  := INIFile.ReadInteger(Section, Col.FieldName + '.Index', Col.Index);
         Col.Index := NewIndex;
       end;
 
       for I := 0 to Grid.Columns.Count - 1 do
       begin
-        Col := Grid.Columns[I];
-        Col.Width := ArquivoINI.ReadInteger(Secao, Col.FieldName + '.Width', Col.Width);
+        Col       := Grid.Columns[I];
+        Col.Width := INIFile.ReadInteger(Section, Col.FieldName + '.Width', Col.Width);
       end;
     finally
       Grid.Columns.EndUpdate;
     end;
   finally
-    ArquivoINI.Free;
+    INIFile.Free;
   end;
+end;
+
+class procedure TGrid.OrderGrid(Column: TColumn);
+var
+  Query: TFDQuery;
+begin
+  if not (Column.Grid.DataSource.DataSet is TFDQuery) then Exit;
+
+  Query := TFDQuery(Column.Grid.DataSource.DataSet);
+
+  // Blindagem contra dataset fechado
+  if not Query.Active then Exit;
+
+  if Query.IndexFieldNames = Column.FieldName then
+    Query.IndexFieldNames := Column.FieldName + ':D'
+  else
+    Query.IndexFieldNames := Column.FieldName;
 end;
 
 class procedure TGrid.ZebrarGrid(Grid: TDBGrid; State: TGridDrawState; Column: TColumn; Rect: TRect; DataCol: Integer);
 var Linha, I: Integer;
 begin
   for I := 0 to Grid.Columns.Count - 1 do
-    Grid.Columns[I].Title.Alignment := taCenter;  //Centraliza o título
+    Grid.Columns[I].Title.Alignment := taCenter;
 
-  // Pinta o cabeçalho
   if (gdFixed in State) then
   begin
     Grid.Canvas.Brush.Color := clGray;
@@ -98,7 +115,6 @@ begin
     Exit;
   end;
 
-  // Lógica para Zebrar as linhas
   if Assigned(Grid.DataSource) and Assigned(Grid.DataSource.DataSet) then
   begin
     Linha := Grid.DataSource.DataSet.RecNo;
@@ -106,22 +122,20 @@ begin
     if not (gdSelected in State) then
     begin
       if (Linha mod 2) = 0 then
-        Grid.Canvas.Brush.Color := clWebLightgrey // Linha Par
+        Grid.Canvas.Brush.Color := clWebLightgrey
       else
-        Grid.Canvas.Brush.Color := clWhite;       // Linha Ímpar
+        Grid.Canvas.Brush.Color := clWhite;
     end
     else
     begin
-      // Cor da linha selecionada
-      Grid.Canvas.Brush.Color := $00FFCC99;
-      Grid.Canvas.Font.Color := clHighlightText;
+      Grid.Canvas.Brush.Color   := $00FFCC99;
+      Grid.Canvas.Font.Color    := clHighlightText;
     end;
   end;
 
   Grid.Canvas.FillRect(Rect);
-
-  // Desenha o texto padrão da célula por cima do fundo colorido
   Grid.DefaultDrawColumnCell(Rect, DataCol, Column, State);
 end;
 
 end.
+

@@ -1,4 +1,4 @@
-unit uPrincipal;
+Ôªøunit uPrincipal;
 
 interface
 
@@ -51,6 +51,10 @@ type
       State: TGridDrawState);
     procedure btnFecharClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure mskPesquisarChange(Sender: TObject);
+    procedure mskPesquisarKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure grdCharListTitleClick(Column: TColumn);
+    procedure btnPesquisarClick(Sender: TObject);
 
 
   private
@@ -67,7 +71,7 @@ implementation
 
 {$R *.dfm}
 
-uses cCharacter, uCharRegistration,cCharacterManager, cCharacterService, cGridUtils;
+uses cCharacter, uCharRegistration,cCharacterManager, cCharacterService, cGridUtils, cSearchUtils;
 
 
 procedure TfrmPrincipal.btnExcluirClick(Sender: TObject);
@@ -75,21 +79,21 @@ var Manager: TCharacterManager;
     PersonagemId: Integer;
     NomePersonagem: string;
 begin
-  if QryCharList.IsEmpty then Exit; // Se a grid estiver vazia, È tchau brigado
+  if QryCharList.IsEmpty then Exit; // Se a grid estiver vazia, √© tchau brigado
 
   PersonagemId   := QryCharList.FieldByName('personagemId').AsInteger; //Carrega os dados do personagem selecionado antes de apagar
   NomePersonagem := QryCharList.FieldByName('Personagem').AsString;
 
-  // PVerificaÁ„o para confirmaÁ„o da exclus„o
+  // PVerifica√ß√£o para confirma√ß√£o da exclus√£o
   if MessageDlg('Tem certeza que deseja excluir o personagem "' + NomePersonagem + '" da base de dados?',
     mtConfirmation, [mbYes, mbNo], 0) = mrYes then
   begin
-    Manager := TCharacterManager.Create(dtmConnection.ConnectionDB); //Joga a responsabilidade da exclus„o pro nosso Manager que contÈm o CRUD
+    Manager := TCharacterManager.Create(dtmConnection.ConnectionDB); //Joga a responsabilidade da exclus√£o pro nosso Manager que cont√©m o CRUD
     try
-      Manager.DeleteFromDatabase(PersonagemId); // Chama o mÈtodo de exclus„o
+      Manager.DeleteFromDatabase(PersonagemId); // Chama o m√©todo de exclus√£o
 
       QryCharList.Refresh;
-      ShowMessage('Personagem excluÌdo com sucesso!');
+      ShowMessage('Personagem exclu√≠do com sucesso!');
     finally
       Manager.Free;
     end;
@@ -101,31 +105,33 @@ var
   Manager: TCharacterManager;
   Registers: Integer;
   OpenDialog: TOpenDialog; // componente de janela do Windows
+  Imported, Duplicated: Integer;
 begin
   OpenDialog := TOpenDialog.Create(nil);
   try
-    // Configuramos para ele sÛ mostrar arquivos .json
+    // Configuramos para ele s√≥ mostrar arquivos .json
     OpenDialog.Filter := 'Arquivos JSON (*.json)|*.json|Todos os Arquivos (*.*)|*.*';
     OpenDialog.Title := 'Selecione o arquivo de personagens para importar';
 
-    // O Execute abre a janela. Se o usu·rio escolheu o arquivo e deu OK, ele entra no IF
+    // O Execute abre a janela. Se o usu√°rio escolheu o arquivo e deu OK, ele entra no IF
     if OpenDialog.Execute then
     begin
       Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
       try
-        // Passamos o caminho exato que o usu·rio escolheu no Windows!
-        Registers := Manager.ImportFromFile(OpenDialog.FileName);
-
-        ShowMessage('ImportaÁ„o concluÌda! ' + IntToStr(Registers) + ' personagens foram processados.');
+        //Passa as vari√°veis para o Manager preencher
+        Manager.ImportFromFile(OpenDialog.FileName, Imported, Duplicated);
+        ShowMessage('Processamento do JSON conclu√≠do!' + sLineBreak + sLineBreak +
+                    '‚úÖ Registros Importados: ' + IntToStr(Imported) + sLineBreak +
+                    '‚ö†Ô∏è Duplicados Ignorados: ' + IntToStr(Duplicated));
       except
         on E: Exception do
-          ShowMessage('Erro na importaÁ„o: ' + E.Message);
+          ShowMessage('Erro na importa√ß√£o: ' + E.Message);
       end;
       Manager.Free;
     end;
 
   finally
-    OpenDialog.Free; // Tira a janelinha da memÛria
+    OpenDialog.Free; // Tira a janelinha da mem√≥ria
   end;
   QryCharList.Refresh;
 end;
@@ -135,9 +141,9 @@ var Manager:    TCharacterManager;
     SaveDialog: TSaveDialog;
     List:       TObjectList<TCharacter>;
 begin
-  if QryCharList.IsEmpty then //Novamente se a lista estiver vazia È tchau brigado
+  if QryCharList.IsEmpty then //Novamente se a lista estiver vazia √© tchau brigado
   begin
-     ShowMessage('N„o h· dados para exportar!');
+     ShowMessage('N√£o h√° dados para exportar!');
      Exit;
   end;
 
@@ -151,7 +157,7 @@ begin
     begin
       Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
       try
-        List  := Manager.GetAllCharacters; //O Manager busca l· no banco todos os personagens
+        List  := Manager.GetAllCharacters; //O Manager busca l√° no banco todos os personagens
         try
           if TCharacterService.SaveToFile(List, SaveDialog.FileName) then // O Service gera o JSON
             ShowMessage('Dados exportados com sucesso para JSON!')
@@ -175,37 +181,57 @@ begin
 end;
 
 procedure TfrmPrincipal.btnNovoClick(Sender: TObject);
-var Char:    TCharacter;
+var Char: TCharacter;
     Manager: TCharacterManager;
 begin
-  Char := TCharacter.Create; //CriaÁ„o de um personagem zerado em memÛria
-
-  frmCharRegistration := TfrmCharRegistration.Create(Self); //Inst‚ncia da tela de cadastro
-
+  Char := TCharacter.Create;
+  frmCharRegistration := TfrmCharRegistration.Create(Self);
   try
-    frmCharRegistration.Character := Char; //Personagem zeradinho pra tela (InjeÁ„o de DependÍncia)
+    // 1. Injeta a depend√™ncia
+    frmCharRegistration.Character := Char;
 
-    if frmCharRegistration.ShowModal = mrOk then //Se o usu·rio clicar em "Salvar", entra no IF
-    begin
-      Manager := TCharacterManager.Create(dtmConnection.ConnectionDB); //Como o usu·rio confirmou, ent„o È criada a inst‚ncia da nossa conex„o com o banco
-      try
-        Manager.SaveToDatabase(Char); //Salva o personagem com o mesmo mÈtodo usado para o JSON
-        QryCharList.Refresh; //Atualizamos a Grid
-      finally
-        Manager.Free;
-      end;
-    end;
+    // 2. Prepara a tela (Carrega listas e seta os combos de forma segura)
+    frmCharRegistration.PrepareScreen;
+
+    repeat
+      if frmCharRegistration.ShowModal = mrOk then
+      begin
+        Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
+        try
+          if Manager.IsDuplicate(Char.Name, Char.Franchise, Char.Id) then
+          begin
+            ShowMessage('‚ùå Aten√ß√£o: O personagem "' + Char.Name + '" j√° existe na franquia "' + Char.Franchise + '"!');
+            Continue; // Reabre a tela!
+          end;
+
+          Manager.SaveToDatabase(Char);
+          QryCharList.Refresh;
+          Break; // Sai do la√ßo, deu tudo certo
+        finally
+          Manager.Free;
+        end;
+      end
+      else
+        Break; // Cancelou a tela
+    until False;
+
   finally
     frmCharRegistration.Free;
     Char.Free;
   end;
 end;
 
+procedure TfrmPrincipal.btnPesquisarClick(Sender: TObject);
+begin
+  TSearchUtils.ApplyFastFilter(QryCharList, mskPesquisar.Text);
+end;
+
+
 procedure TfrmPrincipal.btnEditarClick(Sender: TObject);
 var Char:    TCharacter;
     Manager: TCharacterManager;
 begin
-  if QryCharList.IsEmpty then Exit; //Se o grid estiver vazio È tchau, bragido
+  if QryCharList.IsEmpty then Exit; //Se o grid estiver vazio √© tchau, brigado
 
   Char := TCharacter.Create;
 
@@ -217,24 +243,39 @@ begin
   Char.MediaType      := QryCharList.FieldByName('Midia').       AsString;
   Char.Description    := QryCharList.FieldByName('descricao').   AsString;
 
-  frmCharRegistration := TfrmCharRegistration.Create(Self); //Inst‚ncia da tela igual do bot„o NOVO
+  frmCharRegistration := TfrmCharRegistration.Create(Self); //Inst√¢ncia da tela igual do bot√£o NOVO
   try
-    frmCharRegistration.Character := Char; //InjeÁ„o de dependÍncia
+    // 1. Injeta a depend√™ncia com os dados do Grid
+    frmCharRegistration.Character := Char;
 
-    if frmCharRegistration.ShowModal = mrOk then  //Se o usu·rio clicou em editar
-    begin
-      Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);//Cria a inst‚ncia da conex„o com o banco de dados
-      try
-        Manager.SavetoDatabase(Char); //Chamamos o mÈtodo para salvar as alteraÁıes
+    // 2. Prepara a tela e seleciona os itens corretos no ComboBox
+    frmCharRegistration.PrepareScreen;
 
-        QryCharList.Refresh; //Refresh maroto pra atualizar o grid
-        ShowMessage('Personagem atualizado com sucesso!');
-      finally
-        Manager.Free; //Limpamos da memÛria
-      end;
-    end;
+    repeat
+      if frmCharRegistration.ShowModal = mrOk then
+      begin
+        Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
+        try
+          // Passa o Char.Id para ele saber que est√° editando
+          if Manager.IsDuplicate(Char.Name, Char.Franchise, Char.Id) then
+          begin
+            ShowMessage('‚ùå Aten√ß√£o: O personagem "' + Char.Name + '" j√° existe na franquia "' + Char.Franchise + '"!');
+            Continue;
+          end;
+
+          Manager.SavetoDatabase(Char);
+          QryCharList.Refresh;
+          ShowMessage('Personagem atualizado com sucesso!');
+          Break;
+        finally
+          Manager.Free;
+        end;
+      end
+      else
+        Break;
+    until False;
   finally
-    frmCharRegistration.Free; //Aqui tambÈm
+    frmCharRegistration.Free;
     Char.Free;
   end;
 
@@ -267,9 +308,13 @@ end;
 
   QryCharList.Connection := dtmConnection.ConnectionDB;
   QryCharList.Open;
+  QryCharList.FetchAll; // Traz tudo pra RAM!
 
-  TGrid.LoadGrid(grdCharList, 'CineVerse.ini', 'Leo', Self.Name);
-  ShowMessage('Banco atualizado com sucesso!');
+  try
+    TGrid.LoadGrid(grdCharList, 'CineVerse.ini', 'Leo', Self.Name);
+  finally
+    mskPesquisar.OnChange := mskPesquisarChange;
+  end;
 end;
 
 
@@ -277,6 +322,25 @@ procedure TfrmPrincipal.grdCharListDrawColumnCell(Sender: TObject; const Rect: T
   State: TGridDrawState);
 begin
   TGrid.ZebrarGrid(TDBGrid(Sender), State, Column, Rect, DataCol);
+end;
+
+procedure TfrmPrincipal.grdCharListTitleClick(Column: TColumn);
+begin
+  TGrid.OrderGrid(Column);
+end;
+
+procedure TfrmPrincipal.mskPesquisarChange(Sender: TObject);
+begin
+  TSearchUtils.ApplyFastFilter(QryCharList, mskPesquisar.Text);
+end;
+
+procedure TfrmPrincipal.mskPesquisarKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if Key = VK_RETURN then
+  begin
+    btnPesquisar.Click;
+    Key := 0;
+  end;
 end;
 
 procedure TfrmPrincipal.QryCharListdescricaoGetText(Sender: TField; var Text: string; DisplayText: Boolean);

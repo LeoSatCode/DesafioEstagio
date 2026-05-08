@@ -17,8 +17,9 @@ Type
     constructor Create(AConnection: TFDConnection);
     procedure SavetoDatabase(ACharacter: TCharacter);
     procedure DeleteFromDatabase(const AId: Integer);
-    function ImportFromFile(const AFilePath: string): Integer; //Função que será chmada pelo Form
-    function GetAllCharacters: TObjectList<TCharacter>;
+    procedure ImportFromFile(const AFilePath: string; out AImported, ADuplicated: Integer); //Função que será chmada pelo Form
+    function GetAllCharacters: TObjectList<TCharacter>; //Pega todos os personagens da lista
+    function IsDuplicate(const AName, AFranchise: string; ACurrentId: Integer = 0): Boolean;
   end;
 
 implementation
@@ -29,35 +30,6 @@ constructor TCharacterManager.Create(AConnection: TFDConnection);
 begin
   inherited Create;
   FConnection := AConnection;
-end;
-
-function TCharacterManager.ImportFromFile(const AFilePath: string): Integer;
-var JsonContent:   string;
-    CharacterList: TObjectList<TCharacter>;
-    Character:     TCharacter;
-begin
-  Result := 0;
-
-  if not TFile.Exists(AFilePath) then  //Se o caminho do arquivo não existir
-    raise Exception.Create('Arquivo não encontrado: ' + AFilePath); //fazemos o tratamento de erro
-
-  JsonContent := TFile.ReadAllText(AFilePath, TEncoding.UTF8); //Leitura do Json
-
-  CharacterList := TCharacterService.LoadFromJsonString(JsonContent); //A lista recebe o conteúdo carregado do Json
-  try
-    if Assigned(CharacterList) then
-    begin
-      for Character in CharacterList do //Percorremos so personagens da lista
-      begin
-        Character.Id := 0;//Zeramos o ID para forçar o Manager a entrar no INSERT e não tentar dar UPDATE nos registros existentes ou que não existem
-
-        SavetoDatabase(Character); // Chamamos a persistência para cada item da lista
-        Inc(Result); //Faz a contagem dos itens bem sucedidos
-      end;
-    end;
-  finally
-    FreeAndNil(CharacterList);
-  end;
 end;
 
 procedure TCharacterManager.SavetoDatabase(ACharacter: TCharacter);
@@ -116,6 +88,45 @@ begin
     Qry.ExecSQL;
   finally
     FreeAndNil(Qry);
+  end;
+end;
+
+procedure TCharacterManager.ImportFromFile(const AFilePath: string; out AImported, ADuplicated: Integer);
+var JsonContent:   string;
+    CharacterList: TObjectList<TCharacter>;
+    Character:     TCharacter;
+begin
+  // Zera os contadores de saída
+  AImported := 0;
+  ADuplicated := 0;
+
+  if not TFile.Exists(AFilePath) then //Se o caminho do arquivo não existir, tratamos o erro
+    raise Exception.Create('Arquivo não encontrado: ' + AFilePath);
+
+  JsonContent := TFile.ReadAllText(AFilePath, TEncoding.UTF8);//Leitura do JSON
+
+  CharacterList := TCharacterService.LoadFromJsonString(JsonContent);//A lista recebe o conteúdo carregado do JSON
+  try
+    if Assigned(CharacterList) then
+    begin
+      for Character in CharacterList do //Percorre os personagens da lista
+      begin
+        Character.Id := 0;
+
+        // Usa a função IsDuplicate para checar duplicidade
+        if IsDuplicate(Character.Name, Character.Franchise, 0) then
+        begin
+          Inc(ADuplicated); // Conta como repetido e ignora
+        end
+        else
+        begin
+          SavetoDatabase(Character);
+          Inc(AImported); // Conta como sucesso
+        end;
+      end;
+    end;
+  finally
+    FreeAndNil(CharacterList);
   end;
 end;
 
@@ -207,6 +218,33 @@ begin
       Result.Add(Char);
       Qry.Next;
     end;
+  finally
+    Qry.Free;
+  end;
+end;
+
+function TCharacterManager.IsDuplicate(const AName, AFranchise: string; ACurrentId: Integer): Boolean;
+var Qry: TFDQuery;
+    VFranchiseId: Integer;
+begin
+  Result := False;
+
+  // Pegamos o ID da Franquia para usar no Select
+  VFranchiseId := GetOrCreateFranchise(AFranchise);
+
+  Qry := TFDQuery.Create(nil);
+  try
+    Qry.Connection := FConnection;
+
+    // Buscamos pelos nomes de colunas corretos da tabela.
+    Qry.SQL.Text := 'SELECT 1 FROM Personagens WHERE nome = :nome AND franquiaId = :franquiaId AND personagemId <> :id';
+
+    Qry.ParamByName('nome').AsString       := AName;
+    Qry.ParamByName('franquiaId').AsInteger := VFranchiseId;
+    Qry.ParamByName('id').AsInteger        := ACurrentId;
+
+    Qry.Open;
+    Result := not Qry.IsEmpty;
   finally
     Qry.Free;
   end;

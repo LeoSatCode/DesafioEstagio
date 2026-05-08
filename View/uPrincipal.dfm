@@ -25,7 +25,6 @@ object frmPrincipal: TfrmPrincipal
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 0
-    ExplicitTop = -6
     object btnImportar: TPngBitBtn
       Left = 692
       Top = 48
@@ -51,6 +50,8 @@ object frmPrincipal: TfrmPrincipal
       Height = 21
       TabOrder = 2
       Text = 'mskPesquisar'
+      OnChange = mskPesquisarChange
+      OnKeyDown = mskPesquisarKeyDown
     end
     object btnPesquisar: TPngBitBtn
       Left = 178
@@ -59,6 +60,7 @@ object frmPrincipal: TfrmPrincipal
       Height = 25
       Caption = 'PESQUISAR'
       TabOrder = 3
+      OnClick = btnPesquisarClick
       PngImage.Data = {
         89504E470D0A1A0A0000000D49484452000000100000001008060000001FF3FF
         61000000097048597300000B1300000B1301009A9C180000011B4944415478DA
@@ -81,8 +83,6 @@ object frmPrincipal: TfrmPrincipal
     Height = 42
     Align = alBottom
     TabOrder = 1
-    ExplicitTop = 368
-    ExplicitWidth = 993
     DesignSize = (
       905
       42)
@@ -159,7 +159,6 @@ object frmPrincipal: TfrmPrincipal
       Caption = 'FECHAR'
       TabOrder = 3
       OnClick = btnFecharClick
-      ExplicitLeft = 742
     end
   end
   object grdCharList: TDBGrid
@@ -185,6 +184,7 @@ object frmPrincipal: TfrmPrincipal
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = [fsBold]
     OnDrawColumnCell = grdCharListDrawColumnCell
+    OnTitleClick = grdCharListTitleClick
     Columns = <
       item
         Expanded = False

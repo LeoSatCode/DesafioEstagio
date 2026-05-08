@@ -13,6 +13,7 @@ object frmCharRegistration: TfrmCharRegistration
   Font.Style = []
   OldCreateOrder = True
   Position = poScreenCenter
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 15
   object pnlHeader: TPanel
@@ -24,7 +25,6 @@ object frmCharRegistration: TfrmCharRegistration
     BevelOuter = bvNone
     ParentBackground = False
     TabOrder = 0
-    ExplicitWidth = 520
     object lblTitle: TLabel
       Left = 20
       Top = 25
@@ -47,8 +47,6 @@ object frmCharRegistration: TfrmCharRegistration
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
-    ExplicitWidth = 520
-    ExplicitHeight = 322
     object lblName: TLabel
       Left = 20
       Top = 20
@@ -132,8 +130,6 @@ object frmCharRegistration: TfrmCharRegistration
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 2
-    ExplicitTop = 392
-    ExplicitWidth = 520
     DesignSize = (
       530
       68)
@@ -147,10 +143,9 @@ object frmCharRegistration: TfrmCharRegistration
       Default = True
       TabOrder = 0
       OnClick = btnSaveClick
-      ExplicitWidth = 90
     end
     object btnCancel: TPngBitBtn
-      Left = 116
+      Left = 126
       Top = 20
       Width = 100
       Height = 32
@@ -159,7 +154,6 @@ object frmCharRegistration: TfrmCharRegistration
       Caption = 'CANCELAR'
       TabOrder = 1
       OnClick = btnCancelClick
-      ExplicitWidth = 90
     end
   end
 end
