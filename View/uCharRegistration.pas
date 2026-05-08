@@ -1,4 +1,4 @@
-unit uCharRegistration;
+Ôªøunit uCharRegistration;
 
 interface
 
@@ -46,14 +46,14 @@ implementation
 {$R *.dfm}
 
 uses
-  FireDAC.Comp.Client;
+  FireDAC.Comp.Client, cCharacterManager;
 
 procedure TfrmCharRegistration.PrepareScreen;
 begin
-  // Carrega as opÁıes do banco de dados
+  // Carrega as op√ß√µes do banco de dados
   LoadLists;
 
-  // Preenche a tela garantindo que o objeto FCharacter j· foi injetado!
+  // Preenche a tela garantindo que o objeto FCharacter j√° foi injetado!
   ObjectToScreen;
 
 end;
@@ -100,7 +100,7 @@ begin
     edtName.Text := FCharacter.Name;
     memDescription.Text := FCharacter.Description;
 
-    // Busca inteligente na lista recÈm carregada
+    // Busca inteligente na lista rec√©m carregada
 
     // Franquia
     if FCharacter.Franchise <> '' then
@@ -126,7 +126,7 @@ begin
     else
       cmbActor.ItemIndex := -1;
 
-    // MÌdia
+    // M√≠dia
     if FCharacter.MediaType <> '' then
     begin
       Idx := cmbMedia.Items.IndexOf(FCharacter.MediaType);
@@ -155,23 +155,41 @@ begin
 end;
 
 procedure TfrmCharRegistration.btnSaveClick(Sender: TObject);
+var
+  Manager: TCharacterManager;
 begin
-  // ValidaÁ„o simples
+  // 1. Valida√ß√£o de preenchimento obrigat√≥rio
   if Trim(edtName.Text) = '' then
   begin
-    ShowMessage('O nome do personagem È obrigatÛrio!');
+    ShowMessage('O nome do personagem √© obrigat√≥rio!');
     edtName.SetFocus;
     Exit;
   end;
 
   if Trim(cmbFranchise.Text) = '' then
   begin
-    ShowMessage('A franquia È obrigatÛria!');
+    ShowMessage('A franquia √© obrigat√≥ria!');
     cmbFranchise.SetFocus;
     Exit;
   end;
 
+  // Sincroniza a tela com o objeto antes de validar no banco
   ScreenToObject;
+
+  // Valida√ß√£o de Regra de Neg√≥cio: Duplicidade (Sem fechar a tela)
+  Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
+  try
+    if Manager.IsDuplicate(FCharacter.Name, FCharacter.Franchise, FCharacter.Id) then
+    begin
+      ShowMessage('‚ùå Aten√ß√£o: O personagem "' + FCharacter.Name + '" j√° existe na franquia "' + FCharacter.Franchise + '"!');
+      edtName.SetFocus;
+      Exit; // O Exit impede que o ModalResult seja definido, mantendo o form aberto
+    end;
+  finally
+    Manager.Free;
+  end;
+
+  // Se chegou aqui, passou em tudo!
   ModalResult := mrOk;
 end;
 

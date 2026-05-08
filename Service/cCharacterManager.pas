@@ -141,18 +141,20 @@ begin
     Qry.Connection := FConnection;
 
     Qry.SQL.Text   := 'SELECT franquiaId FROM Franquias WHERE nome = :nome'; //Faz o Select pra achar a Franquia existente
-    Qry.ParamByName('nome').AsString := AName;
+    Qry.ParamByName('nome').AsString := AName.Trim;
     Qry.Open;
 
     if not Qry.IsEmpty then
       Result := Qry.FieldByName('franquiaId').AsInteger
     else
     begin
-      Qry.Close;      //Se não achou a Franquia, faz uma inserção da mesma já retornando o ID gerado pelo IDENTITY do SQL Server
-      Qry.SQL.Text := 'INSERT INTO Franquias (nome) VALUES (:nome); SELECT SCOPE_IDENTITY() AS NewID;';
-      Qry.ParamByName('nome').AsString := AName;
-      Qry.Open;
-      Result := Qry.FieldByName('NewID').AsInteger; //Campo criado no ato do INSERT
+      Qry.SQL.Text := 'INSERT INTO Franquias (nome) VALUES (:nome)';
+      Qry.ParamByName('nome').AsString := AName.Trim;
+      Qry.ExecSQL; // Executa a inserção pura
+
+      Qry.SQL.Text := 'SELECT SCOPE_IDENTITY() AS NewID';
+      Qry.Open;    // Abre o cursor apenas para o select
+      Result := Qry.FieldByName('NewID').AsInteger;
     end;
 
   finally
@@ -172,16 +174,18 @@ begin
 
     //A mesma lógica das Franquias, pode ser usada nos Atores
     Qry.SQL.Text   := 'SELECT atorId FROM Atores WHERE nome = :nome';
-    Qry.ParamByName('nome').AsString := AName;
+    Qry.ParamByName('nome').AsString := AName.Trim;
     Qry.Open;
 
     if not Qry.IsEmpty then
       Result := Qry.FieldByName('atorId').AsInteger
     else
     begin
-      Qry.Close;
-      Qry.SQL.Text := 'INSERT INTO Atores (nome) VALUES (:nome); SELECT SCOPE_IDENTITY() AS NewID;';
-      Qry.ParamByName('nome').AsString := AName;
+      Qry.SQL.Text := 'INSERT INTO Atores (nome) VALUES (:nome)';
+      Qry.ParamByName('nome').AsString := AName.Trim;
+      Qry.ExecSQL;
+
+      Qry.SQL.Text := 'SELECT SCOPE_IDENTITY() AS NewID';
       Qry.Open;
       Result := Qry.FieldByName('NewID').AsInteger;
     end;

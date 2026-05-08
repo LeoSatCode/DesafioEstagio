@@ -181,42 +181,36 @@ begin
 end;
 
 procedure TfrmPrincipal.btnNovoClick(Sender: TObject);
-var Char: TCharacter;
-    Manager: TCharacterManager;
+var
+  Char: TCharacter;
+  Manager: TCharacterManager;
 begin
+  // Instancia o objeto de dados
   Char := TCharacter.Create;
-  frmCharRegistration := TfrmCharRegistration.Create(Self);
   try
-    // 1. Injeta a dependência
-    frmCharRegistration.Character := Char;
+    // Instancia o formulário de interface
+    frmCharRegistration := TfrmCharRegistration.Create(Self);
+    try
+      // Injeção de dependência e preparação
+      frmCharRegistration.Character := Char;
+      frmCharRegistration.PrepareScreen;
 
-    // 2. Prepara a tela (Carrega listas e seta os combos de forma segura)
-    frmCharRegistration.PrepareScreen;
-
-    repeat
+      // O ShowModal só retorna mrOk se a validação interna passar
       if frmCharRegistration.ShowModal = mrOk then
       begin
         Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
         try
-          if Manager.IsDuplicate(Char.Name, Char.Franchise, Char.Id) then
-          begin
-            ShowMessage('❌ Atenção: O personagem "' + Char.Name + '" já existe na franquia "' + Char.Franchise + '"!');
-            Continue; // Reabre a tela!
-          end;
-
           Manager.SaveToDatabase(Char);
           QryCharList.Refresh;
-          Break; // Sai do laço, deu tudo certo
+          ShowMessage('Personagem cadastrado com sucesso!');
         finally
           Manager.Free;
         end;
-      end
-      else
-        Break; // Cancelou a tela
-    until False;
-
+      end;
+    finally
+      frmCharRegistration.Free;
+    end;
   finally
-    frmCharRegistration.Free;
     Char.Free;
   end;
 end;
@@ -226,59 +220,49 @@ begin
   TSearchUtils.ApplyFastFilter(QryCharList, mskPesquisar.Text);
 end;
 
-
 procedure TfrmPrincipal.btnEditarClick(Sender: TObject);
-var Char:    TCharacter;
-    Manager: TCharacterManager;
+var
+  Char: TCharacter;
+  Manager: TCharacterManager;
 begin
-  if QryCharList.IsEmpty then Exit; //Se o grid estiver vazio é tchau, brigado
+  if QryCharList.IsEmpty then Exit; // Se o grid estiver vazio é tchau, brigado
 
+  // Instancia o objeto de dados
   Char := TCharacter.Create;
-
-  //Preenchimento dos dados do personagem da linha selecionada utilizando os Aliases do SELECT na QryCharList
-  Char.Id             := QryCharList.FieldByName('personagemId').AsInteger;
-  Char.Name           := QryCharList.FieldByName('Personagem').  AsString;
-  Char.Franchise      := QryCharList.FieldByName('Franquia').    AsString;
-  Char.ActorOrActress := QryCharList.FieldByName('Ator_Atriz').  AsString;
-  Char.MediaType      := QryCharList.FieldByName('Midia').       AsString;
-  Char.Description    := QryCharList.FieldByName('descricao').   AsString;
-
-  frmCharRegistration := TfrmCharRegistration.Create(Self); //Instância da tela igual do botão NOVO
   try
-    // 1. Injeta a dependência com os dados do Grid
-    frmCharRegistration.Character := Char;
+    // Preenchimento dos dados do personagem da linha selecionada utilizando os Aliases
+    Char.Id             := QryCharList.FieldByName('personagemId').AsInteger;
+    Char.Name           := QryCharList.FieldByName('Personagem').AsString;
+    Char.Franchise      := QryCharList.FieldByName('Franquia').AsString;
+    Char.ActorOrActress := QryCharList.FieldByName('Ator_Atriz').AsString;
+    Char.MediaType      := QryCharList.FieldByName('Midia').AsString;
+    Char.Description    := QryCharList.FieldByName('descricao').AsString;
 
-    // 2. Prepara a tela e seleciona os itens corretos no ComboBox
-    frmCharRegistration.PrepareScreen;
+    // Instancia o formulário de interface UMA única vez
+    frmCharRegistration := TfrmCharRegistration.Create(Self);
+    try
+      // Injeção de dependência e preparação
+      frmCharRegistration.Character := Char;
+      frmCharRegistration.PrepareScreen;
 
-    repeat
+      // O ShowModal só retorna mrOk se a validação interna passar
       if frmCharRegistration.ShowModal = mrOk then
       begin
         Manager := TCharacterManager.Create(dtmConnection.ConnectionDB);
         try
-          // Passa o Char.Id para ele saber que está editando
-          if Manager.IsDuplicate(Char.Name, Char.Franchise, Char.Id) then
-          begin
-            ShowMessage('❌ Atenção: O personagem "' + Char.Name + '" já existe na franquia "' + Char.Franchise + '"!');
-            Continue;
-          end;
-
-          Manager.SavetoDatabase(Char);
+          Manager.SaveToDatabase(Char);
           QryCharList.Refresh;
           ShowMessage('Personagem atualizado com sucesso!');
-          Break;
         finally
           Manager.Free;
         end;
-      end
-      else
-        Break;
-    until False;
+      end;
+    finally
+      frmCharRegistration.Free;
+    end;
   finally
-    frmCharRegistration.Free;
     Char.Free;
   end;
-
 end;
 
 procedure TfrmPrincipal.FormClose(Sender: TObject; var Action: TCloseAction);
