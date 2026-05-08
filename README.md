@@ -20,7 +20,7 @@ Sistema desenvolvido para o Desafio de Estágio (DomTec), focado na gestão efic
 
 O sistema foi projetado com foco na **Experiência do Avaliador**, possuindo uma rotina de auto-configuração (Zero Fricção).
 
-> 📦 **AVALIAÇÃO RÁPIDA (RECOMENDADO):** > Para testar o sistema sem necessidade de compilar, **[baixe a Versão Final na aba Releases aqui]([https://github.com/SeuUsuario/DesafioEstagio/releases/latest](https://github.com/LeoSatCode/DesafioEstagio/releases/tag/v1.0))**. O pacote já contém o executável, o arquivo de configuração pré-montado, os scripts SQL e um arquivo JSON para testes.
+> 📦 **AVALIAÇÃO RÁPIDA (RECOMENDADO):** Para testar o sistema sem necessidade de compilar, **[baixe a Versão Final na aba Releases aqui](https://github.com/LeoSatCode/DesafioEstagio/releases/tag/v1.0)**. O pacote já contém o executável, o arquivo de configuração pré-montado, os scripts SQL e um arquivo JSON para testes.
 
 **Passo a Passo de Execução:**
 1. Extraia a pasta baixada.
@@ -42,7 +42,7 @@ O sistema foi projetado com foco na **Experiência do Avaliador**, possuindo uma
 
 * **CRUD Completo:** Criação, Leitura, Atualização e Exclusão de Personagens, Franquias e Atores.
 * **Regras de Negócio Blindadas:** O sistema impede, tanto via interface quanto via banco de dados (Constraints), o cadastro de um mesmo personagem na mesma franquia.
-* **Filtro Rápido Dinâmico:** Pesquisa simultânea por Nome, Franquia, Ator/Atriz ou Mídia.
+* **Filtro Rápido Dinâmico:** Pesquisa simultânea por Nome, Franquia, Ator/Atriz, Mídia ou Descrição.
 * **Ordenação Interativa:** Clique no título das colunas na listagem para alternar a ordenação (Ascendente/Descendente).
 * **Campos Extensos:** Suporte completo a textos longos na descrição (VARCHAR MAX).
 * **Usabilidade e Acessibilidade:** Uso de *Hotkeys* (Alt + Letra) e navegação intuitiva.
