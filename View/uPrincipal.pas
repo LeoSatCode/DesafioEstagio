@@ -16,7 +16,7 @@ uses
   uDTMConexao, cUpdateDataBase, Vcl.StdCtrls,
   Vcl.Buttons, PngBitBtn, FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error,
   FireDAC.DatS, FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, Data.DB, Vcl.Grids, Vcl.DBGrids,
-  Vcl.ExtCtrls, FireDAC.Comp.DataSet, FireDAC.Comp.Client, Vcl.Mask;
+  Vcl.ExtCtrls, FireDAC.Comp.DataSet, FireDAC.Comp.Client, Vcl.Mask, Vcl.Imaging.pngimage;
 
 type
   TfrmPrincipal = class(TForm)
@@ -39,6 +39,8 @@ type
     btnExportar: TPngBitBtn;
     mskPesquisar: TMaskEdit;
     btnPesquisar: TPngBitBtn;
+    lbl1: TLabel;
+    img1: TImage;
 
     procedure FormCreate(Sender: TObject);
     procedure btnImportarClick(Sender: TObject);
@@ -300,7 +302,6 @@ end;
     mskPesquisar.OnChange := mskPesquisarChange;
   end;
 end;
-
 
 procedure TfrmPrincipal.grdCharListDrawColumnCell(Sender: TObject; const Rect: TRect; DataCol: Integer; Column: TColumn;
   State: TGridDrawState);

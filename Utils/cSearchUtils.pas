@@ -35,7 +35,8 @@ begin
   AQry.Filter := 'Personagem LIKE ' + QuotedStr('%' + CleanText + '%') +
                  ' OR Franquia LIKE ' + QuotedStr('%' + CleanText + '%') +
                  ' OR Ator_Atriz LIKE ' + QuotedStr('%' + CleanText + '%') +
-                 ' OR Midia LIKE ' + QuotedStr('%' + CleanText + '%');
+                 ' OR Midia LIKE ' + QuotedStr('%' + CleanText + '%')+
+                 ' OR descricao LIKE ' + QuotedStr('%' + CleanText + '%');
 
   AQry.Filtered := True;
   AQry.First;
