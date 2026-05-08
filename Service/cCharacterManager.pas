@@ -148,12 +148,10 @@ begin
       Result := Qry.FieldByName('franquiaId').AsInteger
     else
     begin
-      Qry.SQL.Text := 'INSERT INTO Franquias (nome) VALUES (:nome)';
+      // Usando OUTPUT do SQL Server para garantir que o FireDAC não perca o escopo da inserção
+      Qry.SQL.Text := 'INSERT INTO Franquias (nome) OUTPUT INSERTED.franquiaId AS NewID VALUES (:nome)';
       Qry.ParamByName('nome').AsString := AName.Trim;
-      Qry.ExecSQL; // Executa a inserção pura
-
-      Qry.SQL.Text := 'SELECT SCOPE_IDENTITY() AS NewID';
-      Qry.Open;    // Abre o cursor apenas para o select
+      Qry.Open; // O OUTPUT gera um resultado, por isso usamos o Open
       Result := Qry.FieldByName('NewID').AsInteger;
     end;
 
@@ -181,11 +179,8 @@ begin
       Result := Qry.FieldByName('atorId').AsInteger
     else
     begin
-      Qry.SQL.Text := 'INSERT INTO Atores (nome) VALUES (:nome)';
+      Qry.SQL.Text := 'INSERT INTO Atores (nome) OUTPUT INSERTED.atorId AS NewID VALUES (:nome)';
       Qry.ParamByName('nome').AsString := AName.Trim;
-      Qry.ExecSQL;
-
-      Qry.SQL.Text := 'SELECT SCOPE_IDENTITY() AS NewID';
       Qry.Open;
       Result := Qry.FieldByName('NewID').AsInteger;
     end;
