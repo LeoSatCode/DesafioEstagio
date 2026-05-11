@@ -32,6 +32,9 @@ begin
     Exit;
   end;
 
+  //  Ignorar maiúsculas/minúsculas no filtro.
+  AQry.FilterOptions := [foCaseInsensitive];
+
   AQry.Filter := 'Personagem LIKE ' + QuotedStr('%' + CleanText + '%') +
                  ' OR Franquia LIKE ' + QuotedStr('%' + CleanText + '%') +
                  ' OR Ator_Atriz LIKE ' + QuotedStr('%' + CleanText + '%') +
@@ -41,5 +44,4 @@ begin
   AQry.Filtered := True;
   AQry.First;
 end;
-
 end.
