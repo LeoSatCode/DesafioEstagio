@@ -37,7 +37,7 @@ var
 begin
   Ini := TIniFile.Create(FFilePath);
   try
-    // Lê os dados. Se não existir, assume os valores padrão (da sua VM)
+    // Lê os dados. Se não existir, assume os valores padrão
     Result.Server    := Ini.ReadString('Database', 'Server', 'DC-TR-05-VM\SERVERCURSO');
     Result.Database  := Ini.ReadString('Database', 'Database', 'CineVerseDB');
     Result.OSAuthent := Ini.ReadBool('Database', 'OSAuthent', True); // True = Autenticação do Windows
@@ -54,6 +54,7 @@ var
 begin
   Ini := TIniFile.Create(FFilePath);
   try
+    // Salva os valores no arquivo
     Ini.WriteString('Database', 'Server', AParams.Server);
     Ini.WriteString('Database', 'Database', AParams.Database);
     Ini.WriteBool('Database', 'OSAuthent', AParams.OSAuthent);

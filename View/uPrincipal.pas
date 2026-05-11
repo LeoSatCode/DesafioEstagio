@@ -285,7 +285,7 @@ begin
 
     IniPath := ExtractFilePath(Application.ExeName) + 'Config.ini';
     if not FileExists(IniPath) then
-      ConfigService.SaveDefaultConfig(ParamsDB); // Se não existe, cria pra facilitar a vida do Jurado
+      ConfigService.SaveDefaultConfig(ParamsDB); // Se não existe, cria pra facilitar a vida do usuário
   finally
     ConfigService.Free;
   end;
@@ -319,7 +319,7 @@ begin
     try
       Connected := True;
 
-      // Mágica acontecendo: Cria o CineVerseDB caso o Jurado não tenha criado
+      // Mágica acontecendo: Cria o CineVerseDB caso o usuário não tenha criado
       ExecSQL('IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = ' + QuotedStr(ParamsDB.Database) + ') ' +
               'CREATE DATABASE ' + ParamsDB.Database);
 

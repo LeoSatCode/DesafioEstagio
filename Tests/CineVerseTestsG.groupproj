@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{BA7F9B17-4B49-4B59-9F86-6B95ACAD87F9}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="..\DesafioEstagio.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="CineVerseTests.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="DesafioEstagio">
+        <MSBuild Projects="..\DesafioEstagio.dproj"/>
+    </Target>
+    <Target Name="DesafioEstagio:Clean">
+        <MSBuild Projects="..\DesafioEstagio.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DesafioEstagio:Make">
+        <MSBuild Projects="..\DesafioEstagio.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="CineVerseTests">
+        <MSBuild Projects="CineVerseTests.dproj"/>
+    </Target>
+    <Target Name="CineVerseTests:Clean">
+        <MSBuild Projects="CineVerseTests.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CineVerseTests:Make">
+        <MSBuild Projects="CineVerseTests.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="DesafioEstagio;CineVerseTests"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="DesafioEstagio:Clean;CineVerseTests:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="DesafioEstagio:Make;CineVerseTests:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
