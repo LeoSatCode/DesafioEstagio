@@ -227,4 +227,14 @@
     "descricao":"Poderoso lorde Sith conhecido por sua armadura negra e domínio da Força.",
     "tipo_de_midia":"Filme"
   }
+,
+  
+  {
+    "id":24,
+    "nome":"Pitter Porco",
+    "franquia":"Miranha",
+    "ator_ou_atriz":"Tobey Maguire",
+    "descricao":"Melhor miranha",
+    "tipo_de_midia":"Filme"
+  }
 ]

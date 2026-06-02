@@ -14,7 +14,8 @@ uses
   cSearchUtils in 'Utils\cSearchUtils.pas',
   cIniFile in 'Utils\cIniFile.pas',
   Vcl.Themes,
-  Vcl.Styles;
+  Vcl.Styles,
+  cCharacterRepository in 'Service\cCharacterRepository.pas';
 
 {$R *.res}
 
